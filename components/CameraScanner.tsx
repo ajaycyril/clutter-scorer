@@ -24,6 +24,7 @@ type ApiError = {
 const GEMINI_INTERVAL_MS = 2200;
 const DETECTION_INTERVAL_MS = 900;
 const EDGE_INTERVAL_MS = 420;
+const DEMO_ANALYSIS_LIMIT = Number(process.env.NEXT_PUBLIC_DEMO_ANALYSIS_LIMIT ?? 12);
 
 function readableError(error: unknown): string {
   if (error instanceof Error) {
@@ -38,6 +39,15 @@ function isApiError(value: unknown): value is ApiError {
 
 function nowLabel(): string {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function initialAnalysesUsed(): number {
+  if (typeof window === "undefined") {
+    return 0;
+  }
+  const stored = window.sessionStorage.getItem("clutter-scorer-analyses-used");
+  const parsed = stored ? Number(stored) : 0;
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
 }
 
 export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
@@ -65,6 +75,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [baseline, setBaseline] = useState<AnalysisResponse | null>(null);
   const [commentary, setCommentary] = useState<CommentaryItem[]>([]);
+  const [analysesUsed, setAnalysesUsed] = useState(initialAnalysesUsed);
 
   useEffect(() => {
     previousAnalysisRef.current = analysis;
@@ -150,6 +161,11 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         setError("GEMINI_API_KEY is missing. Add it to Vercel or .env.local before running model reasoning.");
         return;
       }
+      if (analysesUsed >= DEMO_ANALYSIS_LIMIT) {
+        setError("Demo analysis limit reached for this browser session.");
+        setStatus("demo limit reached");
+        return;
+      }
 
       pendingGeminiRef.current = true;
       setStatus("gemini physical reasoning");
@@ -179,6 +195,9 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         }
 
         const nextAnalysis = payload as AnalysisResponse;
+        const nextUsage = analysesUsed + 1;
+        setAnalysesUsed(nextUsage);
+        window.sessionStorage.setItem("clutter-scorer-analyses-used", String(nextUsage));
         setAnalysis(nextAnalysis);
         previousAnalysisRef.current = nextAnalysis;
         setCommentary((items) => [{ time: nowLabel(), text: nextAnalysis.commentary }, ...items].slice(0, 8));
@@ -190,7 +209,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         pendingGeminiRef.current = false;
       }
     },
-    [hasGeminiKey, mode, scanPhase],
+    [analysesUsed, hasGeminiKey, mode, scanPhase],
   );
 
   useEffect(() => {
@@ -264,6 +283,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         <div>
           <p className="eyebrow">Physical AI browser demo</p>
           <h1>Clutter Scorer</h1>
+          <p className="app-subtitle">Point at any space. Get a readiness score, live commentary, and physical recommendations.</p>
         </div>
         <div className="loop" aria-label="AI loop">
           <span>camera sensor</span>
@@ -278,6 +298,10 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
 
       <section className="scanner-grid">
         <div className="camera-card">
+          <div className="demo-brief">
+            <strong>Point your camera at a desk, shelf, room corner, or call background.</strong>
+            <span>Gemini turns stable keyframes into a world state, score, recommendations, and verification loop.</span>
+          </div>
           <div className="camera-frame">
             <video muted playsInline ref={videoRef} />
             <OverlayLayer analysis={analysis} />
@@ -286,8 +310,8 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
           <canvas className="hidden-canvas" ref={canvasRef} />
 
           <div className="control-bar">
-            <button disabled={starting || running} onClick={startCamera} type="button">
-              <Camera size={16} /> Start camera
+            <button className="primary-scan-button" disabled={starting || running} onClick={startCamera} type="button">
+              <Camera size={16} /> Start camera scan
             </button>
             <button disabled={!running} onClick={stopCamera} type="button">
               <Pause size={16} /> Pause
@@ -301,6 +325,10 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
             <button onClick={resetSession} type="button">
               <RotateCcw size={16} /> Reset
             </button>
+          </div>
+          <div className="demo-usage">
+            <span>{Math.max(0, DEMO_ANALYSIS_LIMIT - analysesUsed)} analyses left</span>
+            <span>API key server-side</span>
           </div>
 
           {devices.length > 0 ? (
