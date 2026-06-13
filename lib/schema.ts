@@ -214,8 +214,8 @@ export const geminiResponseJsonSchema = {
   required: ["commentary", "score", "scoreLabel", "subscores", "worldState", "events", "actions", "overlays", "verification"],
 } as const;
 
-const scoreResponseSchema = { type: "NUMBER" } as const;
-const normalizedResponseSchema = { type: "NUMBER" } as const;
+const scoreResponseSchema = { type: "NUMBER", minimum: 0, maximum: 100 } as const;
+const normalizedResponseSchema = { type: "NUMBER", minimum: 0, maximum: 1 } as const;
 const stringArrayResponseSchema = { type: "ARRAY", items: { type: "STRING" } } as const;
 
 export const geminiResponseSchema = {
@@ -263,7 +263,7 @@ export const geminiResponseSchema = {
               location: { type: "STRING" },
               affordance: { type: "STRING" },
               movable: { type: "BOOLEAN" },
-              source: { type: "STRING" },
+              source: { type: "STRING", format: "enum", enum: ["local_detection", "gemini_reasoning"] },
             },
           },
         },
@@ -291,11 +291,11 @@ export const geminiResponseSchema = {
         required: ["priority", "instruction", "reason", "expectedGain", "status"],
         propertyOrdering: ["priority", "instruction", "reason", "expectedGain", "status"],
         properties: {
-          priority: { type: "INTEGER" },
+          priority: { type: "INTEGER", minimum: 1, maximum: 10 },
           instruction: { type: "STRING" },
           reason: { type: "STRING" },
           expectedGain: scoreResponseSchema,
-          status: { type: "STRING" },
+          status: { type: "STRING", format: "enum", enum: ["pending", "resolved", "unknown"] },
         },
       },
     },
@@ -306,9 +306,9 @@ export const geminiResponseSchema = {
         required: ["type", "label", "severity", "x", "y"],
         propertyOrdering: ["type", "label", "severity", "x", "y", "w", "h", "toX", "toY"],
         properties: {
-          type: { type: "STRING" },
+          type: { type: "STRING", format: "enum", enum: ["zone", "label", "arrow", "detection"] },
           label: { type: "STRING" },
-          severity: { type: "STRING" },
+          severity: { type: "STRING", format: "enum", enum: ["low", "medium", "high", "positive"] },
           x: normalizedResponseSchema,
           y: normalizedResponseSchema,
           w: { ...normalizedResponseSchema, nullable: true },
@@ -326,7 +326,7 @@ export const geminiResponseSchema = {
         baselineScore: { ...scoreResponseSchema, nullable: true },
         currentScore: scoreResponseSchema,
         predictedScore: { ...scoreResponseSchema, nullable: true },
-        delta: { type: "NUMBER", nullable: true },
+        delta: { type: "NUMBER", minimum: -100, maximum: 100, nullable: true },
         resolved: stringArrayResponseSchema,
         remaining: stringArrayResponseSchema,
       },
