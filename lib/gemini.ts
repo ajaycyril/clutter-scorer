@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { analysisResponseSchema, geminiResponseJsonSchema } from "./schema";
+import { analysisResponseSchema, geminiResponseSchema } from "./schema";
 import { buildAnalysisPrompt, PHYSICAL_AI_SYSTEM_PROMPT } from "./prompts";
 import type { AnalysisResponse, AnalyzeFrameRequest } from "./types";
 
@@ -50,7 +50,7 @@ export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Prom
     config: {
       systemInstruction: PHYSICAL_AI_SYSTEM_PROMPT,
       responseMimeType: "application/json",
-      responseJsonSchema: geminiResponseJsonSchema,
+      responseSchema: geminiResponseSchema,
       temperature: 0.25,
       maxOutputTokens: 2500,
     },
