@@ -9,23 +9,34 @@ export async function listVideoInputDevices(): Promise<MediaDeviceInfo[]> {
 }
 
 export function buildVideoConstraints(mode: Mode, deviceId: string | null): MediaStreamConstraints {
+  const wantsWebcam = mode === "webcam_coach";
+  const videoSizing = wantsWebcam
+    ? {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        aspectRatio: { ideal: 16 / 9 },
+      }
+    : {
+        width: { ideal: 1080 },
+        height: { ideal: 1920 },
+        aspectRatio: { ideal: 9 / 16 },
+      };
+
   if (deviceId) {
     return {
       video: {
         deviceId: { exact: deviceId },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        ...videoSizing,
       },
       audio: false,
     };
   }
 
-  const facingMode = mode === "webcam_coach" ? "user" : "environment";
+  const facingMode = wantsWebcam ? "user" : "environment";
   return {
     video: {
       facingMode: { ideal: facingMode },
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
+      ...videoSizing,
     },
     audio: false,
   };

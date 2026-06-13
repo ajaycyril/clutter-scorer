@@ -124,6 +124,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
   const [baseline, setBaseline] = useState<AnalysisResponse | null>(null);
   const [commentary, setCommentary] = useState<CommentaryItem[]>([]);
   const [analysesUsed, setAnalysesUsed] = useState(initialAnalysesUsed);
+  const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16 / 9");
   const [zone, setZone] = useState<GuardZone | null>(null);
   const [zoneDraft, setZoneDraft] = useState<ZoneDraft | null>(null);
   const [zoneDrawing, setZoneDrawing] = useState(false);
@@ -168,6 +169,9 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
       }
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
+      if (videoRef.current.videoWidth && videoRef.current.videoHeight) {
+        setVideoAspectRatio(`${videoRef.current.videoWidth} / ${videoRef.current.videoHeight}`);
+      }
       await refreshDevices();
       previousFrameRef.current = null;
       setRunning(true);
@@ -201,6 +205,8 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
     setAnalysis(null);
     setBaseline(null);
     setCommentary([]);
+    setAnalysesUsed(0);
+    window.sessionStorage.removeItem("clutter-scorer-analyses-used");
     setZone(null);
     setZoneDraft(null);
     setZoneDrawing(false);
@@ -332,6 +338,13 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
     setStatus("waiting for next usable keyframe");
   }, []);
 
+  const resetDemoLimit = useCallback(() => {
+    setAnalysesUsed(0);
+    window.sessionStorage.removeItem("clutter-scorer-analyses-used");
+    setError(null);
+    setStatus(running ? "edge loop active" : "idle");
+  }, [running]);
+
   const pointFromEvent = useCallback((event: PointerEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     return {
@@ -428,6 +441,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
             onPointerDown={handleZonePointerDown}
             onPointerMove={handleZonePointerMove}
             onPointerUp={handleZonePointerUp}
+            style={{ aspectRatio: videoAspectRatio }}
           >
             <video muted playsInline ref={videoRef} />
             <OverlayLayer analysis={analysis} />
@@ -467,6 +481,9 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
           </div>
           <div className="demo-usage">
             <span>{Math.max(0, DEMO_ANALYSIS_LIMIT - analysesUsed)} analyses left</span>
+            <button className="usage-reset" onClick={resetDemoLimit} type="button">
+              Reset limit
+            </button>
             <span>API key server-side</span>
           </div>
 
