@@ -4,7 +4,7 @@ import type { AnalysisResponse } from "../lib/types";
 
 export function ActionPlanPanel({ analysis }: { analysis: AnalysisResponse | null }) {
   return (
-    <section className="panel">
+    <section className="panel action-panel">
       <div className="panel-heading">
         <h2>Action Plan</h2>
         <span>human actuator</span>

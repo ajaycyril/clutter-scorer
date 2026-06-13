@@ -4,7 +4,7 @@ import type { LocalDetection } from "../lib/types";
 
 export function LocalDetectionsPanel({ detections }: { detections: LocalDetection[] }) {
   return (
-    <section className="panel">
+    <section className="panel edge-hints-panel">
       <div className="panel-heading">
         <h2>Edge Hints</h2>
         <span>{detections.length} high-confidence</span>
