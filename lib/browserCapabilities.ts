@@ -16,6 +16,25 @@ function browserNameFromBrands(brands: Array<{ brand: string }> | undefined): st
   return chrome?.brand ?? brands[0]?.brand ?? "Unknown";
 }
 
+function browserNameFromUserAgent(userAgent: string): string {
+  if (userAgent.includes("CriOS")) {
+    return "Chrome on iOS";
+  }
+  if (userAgent.includes("FxiOS")) {
+    return "Firefox on iOS";
+  }
+  if (userAgent.includes("EdgiOS")) {
+    return "Edge on iOS";
+  }
+  if (userAgent.includes("Safari") && userAgent.includes("Mobile")) {
+    return "Mobile Safari";
+  }
+  if (userAgent.includes("Safari")) {
+    return "Safari";
+  }
+  return "Unknown";
+}
+
 function isChromeFamilyFromBrands(brands: Array<{ brand: string }> | undefined): boolean {
   if (!brands) {
     return false;
@@ -40,7 +59,7 @@ export function getBrowserCapabilities(): CapabilityResult {
 
   const nav = navigator as Navigator & { userAgentData?: UserAgentDataLike; gpu?: unknown };
   const brands = nav.userAgentData?.brands;
-  const browserName = browserNameFromBrands(brands);
+  const browserName = brands ? browserNameFromBrands(brands) : browserNameFromUserAgent(navigator.userAgent);
   const isChromeFamily = isChromeFamilyFromBrands(brands);
   const hasMediaDevices = Boolean(nav.mediaDevices?.getUserMedia);
   const hasWebAssembly = typeof WebAssembly !== "undefined";
@@ -57,9 +76,6 @@ export function getBrowserCapabilities(): CapabilityResult {
   }
 
   const issues: string[] = [];
-  if (!isChromeFamily) {
-    issues.push("Chrome or Edge is required for browser-side AI video processing.");
-  }
   if (!window.isSecureContext) {
     issues.push("A secure context is required. Use HTTPS or localhost.");
   }

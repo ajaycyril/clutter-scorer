@@ -11,7 +11,7 @@ export function CapabilityGate({ result, children }: { result: CapabilityResult 
         <div className="status-card">
           <Cpu />
           <h1>Checking browser capabilities</h1>
-          <p>Clutter Scorer is validating Chrome edge AI requirements.</p>
+          <p>Clutter Scorer is validating camera, WebAssembly, and canvas requirements.</p>
         </div>
       </main>
     );
@@ -22,10 +22,10 @@ export function CapabilityGate({ result, children }: { result: CapabilityResult 
       <main className="center-screen">
         <div className="status-card error">
           <ShieldAlert />
-          <h1>Chrome edge processing required</h1>
-          <p>Use Chrome or Edge on HTTPS or localhost with camera, WebAssembly, and canvas support.</p>
+          <h1>Browser AI requirements missing</h1>
+          <p>Use HTTPS with camera, WebAssembly, and canvas support. Chrome, Edge, and iPhone Safari are supported when those APIs are available.</p>
           <div className="requirements-grid">
-            <Requirement label="Browser" ok={result.isChromeFamily} value={result.browserName} />
+            <Requirement label="Browser" ok value={result.browserName} />
             <Requirement label="Secure context" ok={result.isSecureContext} value={result.isSecureContext ? "Ready" : "Missing"} />
             <Requirement label="Camera API" ok={result.hasMediaDevices} value={result.hasMediaDevices ? "Ready" : "Missing"} />
             <Requirement label="WebAssembly" ok={result.hasWebAssembly} value={result.hasWebAssembly ? "Ready" : "Missing"} />
