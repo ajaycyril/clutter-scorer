@@ -132,7 +132,7 @@ export function computeEdgeMetrics(imageData: ImageData, previous: PreviousFrame
   };
 }
 
-export function captureVideoFrame(video: HTMLVideoElement, canvas: HTMLCanvasElement, maxWidth = 640): ImageData | null {
+export function captureVideoFrame(video: HTMLVideoElement, canvas: HTMLCanvasElement, maxWidth = 560): ImageData | null {
   if (!video.videoWidth || !video.videoHeight) {
     return null;
   }
@@ -151,6 +151,6 @@ export function captureVideoFrame(video: HTMLVideoElement, canvas: HTMLCanvasEle
   return context.getImageData(0, 0, width, height);
 }
 
-export function canvasToJpegDataUrl(canvas: HTMLCanvasElement, quality = 0.68): string {
+export function canvasToJpegDataUrl(canvas: HTMLCanvasElement, quality = 0.62): string {
   return canvas.toDataURL("image/jpeg", quality);
 }

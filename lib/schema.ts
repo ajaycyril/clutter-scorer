@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const scoreSchema = z.number().finite().min(0).max(100);
 const normalizedSchema = z.number().finite().min(0).max(1);
+const nonNegativeIntSchema = z.number().int().min(0);
 
 export const modeSchema = z.enum(["space_scan", "desk_productivity", "webcam_coach"]);
 export const scanPhaseSchema = z.enum(["observe", "baseline", "verify"]);
@@ -97,6 +98,14 @@ export const analysisResponseSchema = z.object({
     resolved: z.array(z.string()),
     remaining: z.array(z.string()),
   }),
+  usage: z
+    .object({
+      inputTokens: nonNegativeIntSchema,
+      outputTokens: nonNegativeIntSchema,
+      totalTokens: nonNegativeIntSchema,
+      estimatedCostUsd: z.number().finite().min(0),
+    })
+    .optional(),
 });
 
 export const analyzeFrameRequestSchema = z.object({

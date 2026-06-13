@@ -214,6 +214,7 @@ h3 {
 }
 
 .camera-card {
+  min-width: 0;
   padding: 12px;
 }
 
@@ -230,6 +231,7 @@ h3 {
 .demo-brief strong {
   font-size: 14px;
   line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .demo-brief span,
@@ -249,48 +251,10 @@ h3 {
   position: relative;
 }
 
-.camera-frame.zone-drawing-enabled {
-  cursor: crosshair;
-  touch-action: none;
-}
-
 .camera-frame video {
   height: 100%;
   object-fit: contain;
   width: 100%;
-}
-
-.guard-zone {
-  background: rgba(255, 207, 90, 0.12);
-  border: 2px solid var(--yellow);
-  border-radius: 6px;
-  position: absolute;
-  z-index: 4;
-}
-
-.guard-zone span {
-  background: rgba(9, 10, 10, 0.82);
-  border-radius: 999px;
-  color: var(--yellow);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 11px;
-  left: 8px;
-  padding: 4px 7px;
-  position: absolute;
-  top: 8px;
-}
-
-.guard-zone.drawing {
-  border-style: dashed;
-}
-
-.guard-zone.intrusion {
-  background: rgba(255, 109, 109, 0.18);
-  border-color: var(--red);
-}
-
-.guard-zone.intrusion span {
-  color: var(--red);
 }
 
 .camera-status {
@@ -331,6 +295,10 @@ h3 {
   background: var(--green-soft);
   border-color: rgba(124, 255, 155, 0.5);
   color: var(--text);
+}
+
+.stop-camera-button {
+  border-color: rgba(255, 207, 90, 0.32);
 }
 
 .primary-scan-button {
@@ -665,42 +633,6 @@ h3 {
   margin-bottom: 10px;
 }
 
-.zone-panel.zone-alert {
-  border-color: rgba(255, 109, 109, 0.55);
-}
-
-.zone-panel.zone-alert .panel-heading span {
-  color: var(--red);
-}
-
-.zone-actions {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 10px;
-}
-
-.active-zone-button {
-  border-color: var(--yellow);
-  color: var(--yellow);
-}
-
-.zone-readout {
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  display: grid;
-  gap: 4px;
-  margin-top: 10px;
-  padding: 10px;
-}
-
-.zone-readout span {
-  color: var(--muted);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 11px;
-}
-
 .next-action strong {
   display: block;
   margin: 5px 0;
@@ -1011,6 +943,7 @@ h3 {
     padding: 0 8px 2px;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
+    width: calc(100vw - 16px);
   }
 
   .mode-selector::-webkit-scrollbar {
@@ -1040,6 +973,7 @@ h3 {
   }
 
   .camera-card {
+    overflow: hidden;
     padding: 8px;
   }
 
@@ -1051,6 +985,7 @@ h3 {
 
   .demo-brief strong {
     font-size: 12px;
+    line-height: 1.25;
   }
 
   .demo-brief span {
@@ -1086,10 +1021,7 @@ h3 {
     gap: 6px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     min-width: 0;
-  }
-
-  .action-panel {
-    grid-column: 1 / -1;
+    overflow: hidden;
   }
 
   .camera-frame {
@@ -1113,7 +1045,7 @@ h3 {
     border-radius: 12px;
     display: grid;
     gap: 4px;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     margin-top: 6px;
     padding: 5px;
     z-index: 25;
@@ -1132,6 +1064,13 @@ h3 {
     grid-column: span 2;
   }
 
+  .control-bar .stop-camera-button {
+    color: var(--yellow);
+    font-size: 11px;
+    gap: 5px;
+    grid-column: span 2;
+  }
+
   .control-bar button svg {
     height: 18px;
     width: 18px;
@@ -1142,19 +1081,40 @@ h3 {
   }
 
   .demo-usage {
+    display: grid;
     gap: 5px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: 5px;
   }
 
   .demo-usage span {
+    justify-content: center;
     font-size: 10px;
+    min-width: 0;
+    overflow: hidden;
     padding: 4px 6px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .usage-reset {
     font-size: 10px;
     min-height: 24px;
+    order: 2;
     padding: 0 7px;
+  }
+
+  .demo-usage span:nth-child(2) {
+    order: 3;
+  }
+
+  .demo-usage span:nth-child(3) {
+    order: 4;
+  }
+
+  .demo-usage span:last-child {
+    display: none;
   }
 
   .device-select select {
@@ -1199,21 +1159,18 @@ h3 {
 
   .commentary-panel,
   .edge-hints-panel,
-  .zone-panel,
   .action-panel {
     min-height: 66px;
   }
 
   .commentary-panel .panel-heading,
   .edge-hints-panel .panel-heading,
-  .zone-panel .panel-heading,
   .action-panel .panel-heading {
     margin-bottom: 4px;
   }
 
   .commentary-panel .empty,
   .edge-hints-panel .empty,
-  .zone-panel .panel-note,
   .action-panel .empty,
   .action-item p {
     display: -webkit-box;
@@ -1221,21 +1178,6 @@ h3 {
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-
-  .zone-actions {
-    gap: 4px;
-    margin-top: 6px;
-  }
-
-  .zone-actions button {
-    font-size: 11px;
-    min-height: 32px;
-    padding: 0 6px;
-  }
-
-  .zone-readout {
-    display: none;
   }
 
   .metric-grid,

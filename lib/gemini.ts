@@ -4,6 +4,8 @@ import { buildAnalysisPrompt, PHYSICAL_AI_SYSTEM_PROMPT } from "./prompts";
 import type { AnalysisResponse, AnalyzeFrameRequest } from "./types";
 
 const DEFAULT_MODEL = "gemini-3-flash-preview";
+const GEMINI_3_FLASH_INPUT_USD_PER_MILLION = 0.5;
+const GEMINI_3_FLASH_OUTPUT_USD_PER_MILLION = 3;
 
 let client: GoogleGenAI | null = null;
 
@@ -24,6 +26,13 @@ function dataUrlToBase64(dataUrl: string): string {
     return dataUrl.slice(commaIndex + 1);
   }
   return dataUrl;
+}
+
+function costEstimate(inputTokens: number, outputTokens: number): number {
+  return (
+    (inputTokens / 1_000_000) * GEMINI_3_FLASH_INPUT_USD_PER_MILLION +
+    (outputTokens / 1_000_000) * GEMINI_3_FLASH_OUTPUT_USD_PER_MILLION
+  );
 }
 
 export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Promise<AnalysisResponse> {
@@ -56,7 +65,7 @@ export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Prom
         thinkingLevel: ThinkingLevel.LOW,
       },
       temperature: 0.25,
-      maxOutputTokens: 2048,
+      maxOutputTokens: 1536,
     },
   });
 
@@ -76,5 +85,18 @@ export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Prom
     throw new Error("MODEL_RESPONSE_INVALID");
   }
 
-  return result.data;
+  const usageMetadata = response.usageMetadata;
+  const inputTokens = usageMetadata?.promptTokenCount ?? 0;
+  const outputTokens = usageMetadata?.candidatesTokenCount ?? 0;
+  const totalTokens = usageMetadata?.totalTokenCount ?? inputTokens + outputTokens;
+
+  return {
+    ...result.data,
+    usage: {
+      inputTokens,
+      outputTokens,
+      totalTokens,
+      estimatedCostUsd: costEstimate(inputTokens, outputTokens),
+    },
+  };
 }
