@@ -338,13 +338,13 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         <div className="right-rail">
           <ScorePanel analysis={analysis} />
           <CommentaryPanel items={commentary} status={status} />
+          <LocalDetectionsPanel detections={detections} />
           <ActionPlanPanel analysis={analysis} />
         </div>
       </section>
 
       <section className="panel-grid">
         <EdgeMetricsPanel metrics={metrics} />
-        <LocalDetectionsPanel detections={detections} />
         <WorldStatePanel events={analysis?.events ?? []} worldState={analysis?.worldState ?? null} />
         <VerificationPanel analysis={analysis} baseline={baseline} />
       </section>

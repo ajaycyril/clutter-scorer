@@ -1,8 +1,8 @@
 # Clutter Scorer
 
-Clutter Scorer is a Chrome-first physical AI demo for everyday spaces and webcam-ready work.
+Clutter Scorer is a browser-native physical AI and robotics perception demo for everyday spaces.
 
-It uses the browser camera as a robot sensor, runs local edge video analytics in Chrome, sends selected stable keyframes to Gemini, and returns a structured world state, clutter/readiness score, action plan, and verification result.
+It treats a webcam or phone camera like a lightweight robot sensor: the browser runs local perception, Gemini builds a scene-level world model, and the user acts as the robot actuator. The result is a live loop that observes a physical environment, reasons about objects and affordances, recommends actions, and verifies whether the scene improved.
 
 The product loop is:
 
@@ -10,7 +10,7 @@ The product loop is:
 Observe -> Detect -> Model -> Plan -> Verify
 ```
 
-The user is the actuator. The AI observes the physical scene, reasons about object affordances and spatial relationships, recommends physical actions, and verifies whether the world changed.
+The demo is intentionally grounded in robotics language: sensor input, edge perception, world-state estimation, affordance reasoning, action planning, and closed-loop verification.
 
 ## Demo Modes
 
@@ -24,7 +24,7 @@ The user is the actuator. The AI observes the physical scene, reasons about obje
 - **Chrome / Edge camera APIs** via `getUserMedia`.
 - **Canvas ImageData** for deterministic browser-side edge metrics.
 - **MediaPipe Tasks Vision ObjectDetector** for local browser object detection.
-- **Gemini API with `@google/genai`** for physical reasoning and structured JSON output.
+- **Gemini API with `@google/genai`** for visual world modeling, physical reasoning, and structured JSON output.
 - **Zod** for request and response validation.
 - **Vercel** for hosting and serverless execution of `app/api/analyze-frame/route.ts`.
 
@@ -34,8 +34,8 @@ This is not an image captioning app. The system exposes a robotics-style loop:
 
 - Camera as sensor.
 - Browser edge analytics as local perception.
-- MediaPipe detections as object-level signals.
-- Gemini as the physical reasoning layer.
+- MediaPipe detections as weak edge hints.
+- Gemini as the visual world-model and physical reasoning layer.
 - World state as a scene graph.
 - User as the actuator.
 - Rescore as closed-loop verification.
@@ -51,7 +51,7 @@ Set:
 
 ```bash
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3-flash-preview
 ```
 
 Run:
