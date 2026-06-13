@@ -52,7 +52,7 @@ export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Prom
       responseMimeType: "application/json",
       responseSchema: geminiResponseSchema,
       temperature: 0.25,
-      maxOutputTokens: 2500,
+      maxOutputTokens: 4096,
     },
   });
 
