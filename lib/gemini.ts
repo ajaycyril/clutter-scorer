@@ -61,7 +61,12 @@ export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Prom
     throw new Error("MODEL_RESPONSE_EMPTY");
   }
 
-  const parsed: unknown = JSON.parse(text);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error("MODEL_RESPONSE_INVALID");
+  }
   const result = analysisResponseSchema.safeParse(parsed);
   if (!result.success) {
     throw new Error("MODEL_RESPONSE_INVALID");

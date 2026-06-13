@@ -30,15 +30,42 @@ Rules:
 - Use normalized overlay coordinates from 0 to 1.`;
 
 export function buildAnalysisPrompt(request: AnalyzeFrameRequest): string {
+  const previousWorldState = request.previousWorldState
+    ? {
+        summary: request.previousWorldState.summary,
+        objects: request.previousWorldState.objects.slice(0, 6).map((object) => ({
+          label: object.label,
+          location: object.location,
+          movable: object.movable,
+        })),
+      }
+    : null;
+
+  const baseline = request.baseline
+    ? {
+        score: request.baseline.score,
+        scoreLabel: request.baseline.scoreLabel,
+        worldSummary: request.baseline.worldState.summary,
+        actions: request.baseline.actions.slice(0, 4).map((action) => ({
+          instruction: action.instruction,
+          status: action.status,
+        })),
+      }
+    : null;
+
   return JSON.stringify({
     task: "Analyze this camera keyframe as a physical AI observer.",
     mode: request.mode,
     scanPhase: request.scanPhase,
     edgeMetrics: request.edgeMetrics,
-    localDetections: request.localDetections,
-    previousWorldState: request.previousWorldState,
-    baseline: request.baseline,
-    requiredOutput: "Return one JSON object matching the configured response schema.",
+    localDetections: request.localDetections.slice(0, 10),
+    previousWorldState,
+    baseline,
+    outputRules: [
+      "Return one compact JSON object matching the configured schema.",
+      "Use at most 4 actions, 6 overlays, 6 objects, 6 relationships, and 4 events.",
+      "Keep every sentence short.",
+    ],
   });
 }
 

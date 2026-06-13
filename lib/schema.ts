@@ -216,7 +216,7 @@ export const geminiResponseJsonSchema = {
 
 const scoreResponseSchema = { type: "NUMBER", minimum: 0, maximum: 100 } as const;
 const normalizedResponseSchema = { type: "NUMBER", minimum: 0, maximum: 1 } as const;
-const stringArrayResponseSchema = { type: "ARRAY", items: { type: "STRING" } } as const;
+const stringArrayResponseSchema = { type: "ARRAY", maxItems: "4", items: { type: "STRING" } } as const;
 
 export const geminiResponseSchema = {
   type: "OBJECT",
@@ -225,6 +225,7 @@ export const geminiResponseSchema = {
   properties: {
     commentary: {
       type: "STRING",
+      maxLength: "180",
       description: "Concise live commentary under 28 words.",
     },
     score: scoreResponseSchema,
@@ -253,6 +254,7 @@ export const geminiResponseSchema = {
         summary: { type: "STRING" },
         objects: {
           type: "ARRAY",
+          maxItems: "6",
           items: {
             type: "OBJECT",
             required: ["id", "label", "location", "affordance", "movable", "source"],
@@ -269,6 +271,7 @@ export const geminiResponseSchema = {
         },
         relationships: {
           type: "ARRAY",
+          maxItems: "6",
           items: {
             type: "OBJECT",
             required: ["subject", "relation", "object", "implication"],
@@ -286,6 +289,7 @@ export const geminiResponseSchema = {
     events: stringArrayResponseSchema,
     actions: {
       type: "ARRAY",
+      maxItems: "4",
       items: {
         type: "OBJECT",
         required: ["priority", "instruction", "reason", "expectedGain", "status"],
@@ -301,6 +305,7 @@ export const geminiResponseSchema = {
     },
     overlays: {
       type: "ARRAY",
+      maxItems: "6",
       items: {
         type: "OBJECT",
         required: ["type", "label", "severity", "x", "y"],
