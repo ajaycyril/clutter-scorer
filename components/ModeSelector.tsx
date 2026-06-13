@@ -3,9 +3,9 @@
 import type { AppMode } from "@/lib/types";
 
 const modeOptions: Array<{ value: AppMode; label: string; description: string }> = [
-  { value: "space_scan", label: "Space Scan", description: "Desk, shelf, counter, or room corner." },
-  { value: "desk_productivity", label: "Desk Productivity", description: "Focus zone, cables, tools, and spill risk." },
-  { value: "webcam_coach", label: "Webcam Coach", description: "Lighting, framing, background, and call readiness." },
+  { value: "space_scan", label: "Any Space", description: "Shelves, counters, rooms, closets, drawers, desks." },
+  { value: "desk_productivity", label: "Work Setup", description: "Desk, cables, tools, focus zone, spill risk." },
+  { value: "webcam_coach", label: "Camera Background", description: "Lighting, framing, background, call readiness." },
 ];
 
 export function ModeSelector({

@@ -70,7 +70,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
   const lastGeminiAtRef = useRef(0);
   const lastDetectionAtRef = useRef(0);
 
-  const [mode, setMode] = useState<AppMode>("desk_productivity");
+  const [mode, setMode] = useState<AppMode>("space_scan");
   const [scanPhase, setScanPhase] = useState<ScanPhase>("observe");
   const [running, setRunning] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -306,7 +306,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         <div>
           <p className="eyebrow">Physical AI browser demo</p>
           <h1>Clutter Scorer</h1>
-          <p className="app-subtitle">Point at a space and hold steady until the score, commentary, and action plan appear.</p>
+          <p className="app-subtitle">Point at any visible space and hold steady for organization, layout, and clutter recommendations.</p>
         </div>
         <div className="loop" aria-label="AI loop">
           <span>camera sensor</span>
@@ -322,8 +322,8 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
       <section className="scanner-grid">
         <div className="camera-card">
           <div className="demo-brief">
-            <strong>Hold the camera pointed at the same space until Gemini returns a response.</strong>
-            <span>Stable frames produce a score, live commentary, and action plan. Moving too soon can delay analysis.</span>
+            <strong>Hold the camera on any shelf, counter, room corner, drawer, closet, desk, or background until Gemini responds.</strong>
+            <span>Stable frames produce organization suggestions, layout fixes, clutter score, and an action plan.</span>
           </div>
           <div
             className="camera-frame"

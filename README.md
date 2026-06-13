@@ -1,8 +1,8 @@
 # Clutter Scorer
 
-Clutter Scorer is a browser-native physical AI and robotics perception demo for everyday spaces.
+Clutter Scorer is a browser-native physical AI and robotics perception demo for organizing everyday spaces.
 
-It treats a webcam or phone camera like a lightweight robot sensor: the browser runs local perception, Gemini builds a scene-level world model, and the user acts as the robot actuator. The result is a live loop that observes a physical environment, reasons about objects and affordances, recommends actions, and verifies whether the scene improved.
+It treats a webcam or phone camera like a lightweight robot sensor: the browser runs local perception, Gemini builds a scene-level world model, and the user acts as the robot actuator. The result is a live loop that observes any visible area, reasons about objects and affordances, recommends organization/layout improvements, and verifies whether the scene improved.
 
 The product loop is:
 
@@ -20,9 +20,9 @@ The demo is intentionally grounded in robotics language: sensor input, edge perc
 
 ## Demo Modes
 
-- **Space Scan**: desks, shelves, counters, and room corners.
-- **Desk Productivity**: focus zone, cables, tools, spill risk, and work readiness.
-- **Webcam Coach**: lighting, framing, background clarity, visible clutter, and call readiness.
+- **Any Space**: shelves, counters, rooms, closets, drawers, cabinets, desks, and backgrounds.
+- **Work Setup**: focus zone, cables, tools, spill risk, and work readiness.
+- **Camera Background**: lighting, framing, background clarity, visible clutter, and call readiness.
 
 ## Technical Flow
 

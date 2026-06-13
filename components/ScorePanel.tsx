@@ -14,7 +14,7 @@ export function ScorePanel({ analysis }: { analysis: AnalysisResponse | null }) 
       </div>
       <div>
         <div className="panel-heading inline">
-          <h2>Clutter / Readiness</h2>
+          <h2>Organization Score</h2>
           <span>{analysis?.scoreLabel ?? "waiting"}</span>
         </div>
         {analysis ? (

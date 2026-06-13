@@ -9,14 +9,14 @@ Build a scene graph / world state.
 Identify objects, affordances, spatial relationships, risks, constraints, and usable zones.
 Track changes from the previous world state.
 Generate concise real-time commentary.
-Score clutter/readiness from 0 to 100.
-Recommend ordered physical actions.
+Score organization quality from 0 to 100.
+Recommend ordered physical actions that improve organization, layout, accessibility, safety, and visual clarity.
 Predict expected score gain.
 During verification, compare against baseline and decide what improved.
 
 Mode behavior:
-- Space Scan: broader physical organization, clutter zones, usable surfaces, object grouping, spatial risks.
-- Desk Productivity: work readiness, focus zone, reachable tools, cable mess, drink/electronics risk, distractions.
+- Space Scan: general physical organization for any visible area: shelves, counters, closets, drawers, cabinets, entryways, room corners, desks, storage zones, or backgrounds.
+- Desk Productivity: desk/work readiness, focus zone, reachable tools, cable mess, drink/electronics risk, distractions.
 - Webcam Coach: visible laptop webcam scene only: lighting, framing, background clarity, visible clutter, professionalism.
 
 Rules:
@@ -29,6 +29,7 @@ Rules:
 - Prefer generic labels such as item, container, paper, device, cable, or surface when exact identity is uncertain.
 - Never claim precise measurements.
 - Prefer practical physical actions.
+- Suggest grouping, removing, relocating, spacing, labeling, containment, cleaning, layout, access, and safety improvements when relevant.
 - Speak like a live visual agent, not a static image captioner.
 - Use normalized overlay coordinates from 0 to 1.`;
 
@@ -57,7 +58,7 @@ export function buildAnalysisPrompt(request: AnalyzeFrameRequest): string {
     : null;
 
   return JSON.stringify({
-    task: "Analyze this camera keyframe as a physical AI observer.",
+    task: "Analyze this camera keyframe as a physical AI organization observer for any visible space.",
     mode: request.mode,
     scanPhase: request.scanPhase,
     edgeMetrics: request.edgeMetrics,
@@ -77,6 +78,7 @@ export function buildAnalysisPrompt(request: AnalyzeFrameRequest): string {
       "Return one compact JSON object matching the configured schema.",
       "Use at most 4 actions, 6 overlays, 6 objects, 6 relationships, and 4 events.",
       "Keep every sentence short.",
+      "Prioritize broadly useful organization and layout improvements, not only desk productivity.",
       "If localDetectionHints disagree with the image, ignore the hints.",
     ],
   });

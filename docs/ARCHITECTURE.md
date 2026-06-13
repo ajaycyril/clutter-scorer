@@ -57,7 +57,7 @@ It returns:
 
 - live commentary
 - usage metadata for token and approximate cost display
-- clutter/readiness score
+- organization score
 - subscores
 - scene graph / world state
 - events
