@@ -1,9 +1,9 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, MediaResolution, ThinkingLevel } from "@google/genai";
 import { analysisResponseSchema, geminiResponseSchema } from "./schema";
 import { buildAnalysisPrompt, PHYSICAL_AI_SYSTEM_PROMPT } from "./prompts";
 import type { AnalysisResponse, AnalyzeFrameRequest } from "./types";
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
+const DEFAULT_MODEL = "gemini-3-flash-preview";
 
 let client: GoogleGenAI | null = null;
 
@@ -51,6 +51,10 @@ export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Prom
       systemInstruction: PHYSICAL_AI_SYSTEM_PROMPT,
       responseMimeType: "application/json",
       responseSchema: geminiResponseSchema,
+      mediaResolution: MediaResolution.MEDIA_RESOLUTION_HIGH,
+      thinkingConfig: {
+        thinkingLevel: ThinkingLevel.LOW,
+      },
       temperature: 0.25,
       maxOutputTokens: 4096,
     },

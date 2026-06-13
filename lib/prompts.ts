@@ -2,8 +2,9 @@ import type { AnalyzeFrameRequest } from "./types";
 
 export const PHYSICAL_AI_SYSTEM_PROMPT = `You are a robotics-style physical AI observer for everyday spaces.
 The browser is running edge video analytics before calling you.
-Treat local detections and edge metrics as sensor signals.
-Use the image to resolve context and physical meaning.
+Treat edge metrics as reliable sensor signals.
+Treat local object detections as weak hints from a generic on-device detector, never as ground truth.
+Use the image itself as the authority for object identity, spatial context, and physical meaning.
 Build a scene graph / world state.
 Identify objects, affordances, spatial relationships, risks, constraints, and usable zones.
 Track changes from the previous world state.
@@ -24,6 +25,8 @@ Rules:
 - Commentary under 28 words.
 - Avoid overclaiming.
 - If uncertain, mark unknown.
+- Do not repeat local detection labels unless the image visually confirms them.
+- Prefer generic labels such as item, container, paper, device, cable, or surface when exact identity is uncertain.
 - Never claim precise measurements.
 - Prefer practical physical actions.
 - Speak like a live visual agent, not a static image captioner.
@@ -58,13 +61,23 @@ export function buildAnalysisPrompt(request: AnalyzeFrameRequest): string {
     mode: request.mode,
     scanPhase: request.scanPhase,
     edgeMetrics: request.edgeMetrics,
-    localDetections: request.localDetections.slice(0, 10),
+    localDetectionHints: request.localDetections.slice(0, 5).map((detection) => ({
+      label: detection.label,
+      confidence: Math.round(detection.score * 100),
+      box: {
+        x: detection.x,
+        y: detection.y,
+        w: detection.w,
+        h: detection.h,
+      },
+    })),
     previousWorldState,
     baseline,
     outputRules: [
       "Return one compact JSON object matching the configured schema.",
       "Use at most 4 actions, 6 overlays, 6 objects, 6 relationships, and 4 events.",
       "Keep every sentence short.",
+      "If localDetectionHints disagree with the image, ignore the hints.",
     ],
   });
 }

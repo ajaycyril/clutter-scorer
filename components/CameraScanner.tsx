@@ -280,7 +280,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         <div className="camera-card">
           <div className="camera-frame">
             <video muted playsInline ref={videoRef} />
-            <OverlayLayer analysis={analysis} localDetections={detections} />
+            <OverlayLayer analysis={analysis} />
             <div className="camera-status">{status}</div>
           </div>
           <canvas className="hidden-canvas" ref={canvasRef} />

@@ -6,16 +6,16 @@ export function LocalDetectionsPanel({ detections }: { detections: LocalDetectio
   return (
     <section className="panel">
       <div className="panel-heading">
-        <h2>Local Detections</h2>
-        <span>{detections.length} objects</span>
+        <h2>Edge Hints</h2>
+        <span>{detections.length} high-confidence</span>
       </div>
       {detections.length === 0 ? (
-        <p className="empty">MediaPipe detections will appear here.</p>
+        <p className="empty">High-confidence browser hints will appear here. Gemini handles scene understanding.</p>
       ) : (
         <div className="chip-list">
           {detections.map((detection, index) => (
             <span key={`${detection.label}-${index}`} className="chip">
-              {detection.label} {Math.round(detection.score * 100)}%
+              hint: {detection.label} {Math.round(detection.score * 100)}%
             </span>
           ))}
         </div>

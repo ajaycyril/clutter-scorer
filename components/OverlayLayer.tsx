@@ -1,10 +1,9 @@
 "use client";
 
-import type { AnalysisResponse, LocalDetection } from "../lib/types";
+import type { AnalysisResponse } from "../lib/types";
 
 type OverlayLayerProps = {
   analysis: AnalysisResponse | null;
-  localDetections: LocalDetection[];
 };
 
 function severityClass(severity: string): string {
@@ -17,24 +16,10 @@ function severityClass(severity: string): string {
   return "overlay-medium";
 }
 
-export function OverlayLayer({ analysis, localDetections }: OverlayLayerProps) {
+export function OverlayLayer({ analysis }: OverlayLayerProps) {
   const overlays = analysis?.overlays ?? [];
   return (
     <div className="overlay-layer" aria-hidden="true">
-      {localDetections.map((detection, index) => (
-        <div
-          key={`${detection.label}-${index}`}
-          className="detection-box"
-          style={{
-            left: `${detection.x * 100}%`,
-            top: `${detection.y * 100}%`,
-            width: `${detection.w * 100}%`,
-            height: `${detection.h * 100}%`,
-          }}
-        >
-          <span>{detection.label}</span>
-        </div>
-      ))}
       {overlays.map((overlay, index) => {
         if (overlay.type === "arrow" && overlay.toX !== undefined && overlay.toY !== undefined) {
           return (
