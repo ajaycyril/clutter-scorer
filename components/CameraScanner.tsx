@@ -1,16 +1,19 @@
 "use client";
 
 import { AlertTriangle, Camera, Pause, RotateCcw, ScanLine, Target } from "lucide-react";
+import type { PointerEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActionPlanPanel } from "./ActionPlanPanel";
 import { CommentaryPanel, type CommentaryItem } from "./CommentaryPanel";
 import { EdgeMetricsPanel } from "./EdgeMetricsPanel";
+import { GeminiExplainerPanel } from "./GeminiExplainerPanel";
 import { LocalDetectionsPanel } from "./LocalDetectionsPanel";
 import { ModeSelector } from "./ModeSelector";
 import { OverlayLayer } from "./OverlayLayer";
 import { ScorePanel } from "./ScorePanel";
 import { VerificationPanel } from "./VerificationPanel";
 import { WorldStatePanel } from "./WorldStatePanel";
+import { ZoneGuardPanel } from "./ZoneGuardPanel";
 import { buildVideoConstraints, listVideoInputDevices, stopStream } from "@/lib/camera";
 import { canvasToJpegDataUrl, captureVideoFrame, computeEdgeMetrics, type EdgeMetricResult } from "@/lib/edgeMetrics";
 import { createObjectDetector, detectObjectsForVideo } from "@/lib/mediaPipeDetector";
@@ -21,8 +24,22 @@ type ApiError = {
   detail?: string;
 };
 
-const GEMINI_INTERVAL_MS = 2200;
-const DETECTION_INTERVAL_MS = 900;
+type GuardZone = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+type ZoneDraft = {
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+};
+
+const GEMINI_INTERVAL_MS = 1500;
+const DETECTION_INTERVAL_MS = 650;
 const EDGE_INTERVAL_MS = 420;
 const DEMO_ANALYSIS_LIMIT = Number(process.env.NEXT_PUBLIC_DEMO_ANALYSIS_LIMIT ?? 12);
 
@@ -48,6 +65,37 @@ function initialAnalysesUsed(): number {
   const stored = window.sessionStorage.getItem("clutter-scorer-analyses-used");
   const parsed = stored ? Number(stored) : 0;
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function clampUnit(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function draftToZone(draft: ZoneDraft): GuardZone {
+  const x = Math.min(draft.startX, draft.currentX);
+  const y = Math.min(draft.startY, draft.currentY);
+  return {
+    x,
+    y,
+    w: Math.abs(draft.currentX - draft.startX),
+    h: Math.abs(draft.currentY - draft.startY),
+  };
+}
+
+function zoneHasPerson(zone: GuardZone | null, detections: LocalDetection[]): boolean {
+  if (!zone) {
+    return false;
+  }
+
+  return detections.some((detection) => {
+    if (detection.label.toLowerCase() !== "person") {
+      return false;
+    }
+
+    const overlapX = Math.max(0, Math.min(zone.x + zone.w, detection.x + detection.w) - Math.max(zone.x, detection.x));
+    const overlapY = Math.max(0, Math.min(zone.y + zone.h, detection.y + detection.h) - Math.max(zone.y, detection.y));
+    return overlapX * overlapY > 0;
+  });
 }
 
 export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
@@ -76,6 +124,9 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
   const [baseline, setBaseline] = useState<AnalysisResponse | null>(null);
   const [commentary, setCommentary] = useState<CommentaryItem[]>([]);
   const [analysesUsed, setAnalysesUsed] = useState(initialAnalysesUsed);
+  const [zone, setZone] = useState<GuardZone | null>(null);
+  const [zoneDraft, setZoneDraft] = useState<ZoneDraft | null>(null);
+  const [zoneDrawing, setZoneDrawing] = useState(false);
 
   useEffect(() => {
     previousAnalysisRef.current = analysis;
@@ -150,6 +201,9 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
     setAnalysis(null);
     setBaseline(null);
     setCommentary([]);
+    setZone(null);
+    setZoneDraft(null);
+    setZoneDrawing(false);
     setScanPhase("observe");
     setError(null);
     setStatus(running ? "edge loop active" : "idle");
@@ -168,6 +222,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
       }
 
       pendingGeminiRef.current = true;
+      const startedAt = performance.now();
       setStatus("gemini physical reasoning");
       try {
         const response = await fetch("/api/analyze-frame", {
@@ -201,7 +256,7 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
         setAnalysis(nextAnalysis);
         previousAnalysisRef.current = nextAnalysis;
         setCommentary((items) => [{ time: nowLabel(), text: nextAnalysis.commentary }, ...items].slice(0, 8));
-        setStatus("edge loop active");
+        setStatus(`edge loop active ${Math.round(performance.now() - startedAt)}ms`);
       } catch (analysisError) {
         setError(readableError(analysisError));
         setStatus("analysis error");
@@ -277,6 +332,72 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
     setStatus("waiting for next usable keyframe");
   }, []);
 
+  const pointFromEvent = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return {
+      x: clampUnit((event.clientX - rect.left) / rect.width),
+      y: clampUnit((event.clientY - rect.top) / rect.height),
+    };
+  }, []);
+
+  const startZoneDrawing = useCallback(() => {
+    setZoneDrawing(true);
+    setZoneDraft(null);
+    setStatus("draw guard zone");
+  }, []);
+
+  const clearZone = useCallback(() => {
+    setZone(null);
+    setZoneDraft(null);
+    setZoneDrawing(false);
+    setStatus(running ? "edge loop active" : "idle");
+  }, [running]);
+
+  const handleZonePointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!zoneDrawing) {
+        return;
+      }
+      const point = pointFromEvent(event);
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setZoneDraft({ startX: point.x, startY: point.y, currentX: point.x, currentY: point.y });
+    },
+    [pointFromEvent, zoneDrawing],
+  );
+
+  const handleZonePointerMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!zoneDrawing || !zoneDraft) {
+        return;
+      }
+      const point = pointFromEvent(event);
+      setZoneDraft((draft) => (draft ? { ...draft, currentX: point.x, currentY: point.y } : null));
+    },
+    [pointFromEvent, zoneDraft, zoneDrawing],
+  );
+
+  const handleZonePointerUp = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!zoneDrawing || !zoneDraft) {
+        return;
+      }
+      const point = pointFromEvent(event);
+      const nextZone = draftToZone({ ...zoneDraft, currentX: point.x, currentY: point.y });
+      setZoneDraft(null);
+      setZoneDrawing(false);
+      if (nextZone.w >= 0.04 && nextZone.h >= 0.04) {
+        setZone(nextZone);
+        setStatus("zone guard armed");
+      } else {
+        setStatus("zone too small");
+      }
+    },
+    [pointFromEvent, zoneDraft, zoneDrawing],
+  );
+
+  const activeZone = zoneDraft ? draftToZone(zoneDraft) : zone;
+  const zoneIntrusion = zoneHasPerson(zone, detections);
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -302,9 +423,27 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
             <strong>Point your camera at a desk, shelf, room corner, or call background.</strong>
             <span>Gemini turns stable keyframes into a world state, score, recommendations, and verification loop.</span>
           </div>
-          <div className="camera-frame">
+          <div
+            className={`camera-frame ${zoneDrawing ? "zone-drawing-enabled" : ""}`}
+            onPointerDown={handleZonePointerDown}
+            onPointerMove={handleZonePointerMove}
+            onPointerUp={handleZonePointerUp}
+          >
             <video muted playsInline ref={videoRef} />
             <OverlayLayer analysis={analysis} />
+            {activeZone ? (
+              <div
+                className={`guard-zone ${zoneDraft ? "drawing" : ""} ${zoneIntrusion ? "intrusion" : ""}`}
+                style={{
+                  left: `${activeZone.x * 100}%`,
+                  top: `${activeZone.y * 100}%`,
+                  width: `${activeZone.w * 100}%`,
+                  height: `${activeZone.h * 100}%`,
+                }}
+              >
+                <span>{zoneIntrusion ? "PERSON IN ZONE" : zoneDraft ? "DRAWING ZONE" : "GUARD ZONE"}</span>
+              </div>
+            ) : null}
             <div className="camera-status">{status}</div>
           </div>
           <canvas className="hidden-canvas" ref={canvasRef} />
@@ -367,9 +506,12 @@ export function CameraScanner({ hasGeminiKey }: { hasGeminiKey: boolean }) {
           <ScorePanel analysis={analysis} />
           <CommentaryPanel items={commentary} status={status} />
           <LocalDetectionsPanel detections={detections} />
+          <ZoneGuardPanel armed={zoneDrawing} intrusion={zoneIntrusion} onClear={clearZone} onStartDrawing={startZoneDrawing} zone={zone} />
           <ActionPlanPanel analysis={analysis} />
         </div>
       </section>
+
+      <GeminiExplainerPanel />
 
       <section className="panel-grid">
         <EdgeMetricsPanel metrics={metrics} />

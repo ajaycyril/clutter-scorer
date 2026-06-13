@@ -12,6 +12,7 @@ components/
   CameraScanner.tsx
   CapabilityGate.tsx
   OverlayLayer.tsx
+  ZoneGuardPanel.tsx
   panels...
 lib/
   browserCapabilities.ts
@@ -33,8 +34,9 @@ public/models/
 - No mock model responses.
 - No client-side Gemini key.
 - Edge metrics run every 500 ms while scanning.
-- MediaPipe detection runs at most once per second.
+- MediaPipe detection runs sub-second for responsive edge hints and zone guarding.
 - Gemini requests are keyframe-gated to avoid API spam.
+- Gemini keyframes are downscaled to reduce request latency and payload size.
 
 ## Main Contracts
 

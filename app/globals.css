@@ -249,10 +249,48 @@ h3 {
   position: relative;
 }
 
+.camera-frame.zone-drawing-enabled {
+  cursor: crosshair;
+  touch-action: none;
+}
+
 .camera-frame video {
   height: 100%;
   object-fit: cover;
   width: 100%;
+}
+
+.guard-zone {
+  background: rgba(255, 207, 90, 0.12);
+  border: 2px solid var(--yellow);
+  border-radius: 6px;
+  position: absolute;
+  z-index: 4;
+}
+
+.guard-zone span {
+  background: rgba(9, 10, 10, 0.82);
+  border-radius: 999px;
+  color: var(--yellow);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  left: 8px;
+  padding: 4px 7px;
+  position: absolute;
+  top: 8px;
+}
+
+.guard-zone.drawing {
+  border-style: dashed;
+}
+
+.guard-zone.intrusion {
+  background: rgba(255, 109, 109, 0.18);
+  border-color: var(--red);
+}
+
+.guard-zone.intrusion span {
+  color: var(--red);
 }
 
 .camera-status {
@@ -349,6 +387,45 @@ h3 {
 .panel {
   min-width: 0;
   padding: 14px;
+}
+
+.gemini-explainer {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  margin-top: 16px;
+}
+
+.gemini-explainer p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 8px 0 0;
+}
+
+.explainer-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.explainer-grid div {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+}
+
+.explainer-grid strong {
+  font-size: 13px;
+}
+
+.explainer-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .panel > *:last-child {
@@ -579,6 +656,42 @@ h3 {
   margin-bottom: 10px;
 }
 
+.zone-panel.zone-alert {
+  border-color: rgba(255, 109, 109, 0.55);
+}
+
+.zone-panel.zone-alert .panel-heading span {
+  color: var(--red);
+}
+
+.zone-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 10px;
+}
+
+.active-zone-button {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+.zone-readout {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+.zone-readout span {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+}
+
 .next-action strong {
   display: block;
   margin: 5px 0;
@@ -797,7 +910,8 @@ h3 {
 
   .app-header,
   .scanner-grid,
-  .panel-grid {
+  .panel-grid,
+  .gemini-explainer {
     grid-template-columns: 1fr;
   }
 
@@ -932,9 +1046,23 @@ h3 {
     gap: 8px;
   }
 
+  .gemini-explainer {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .gemini-explainer p {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .explainer-grid {
+    grid-template-columns: 1fr;
+  }
+
   .scanner-grid {
     align-items: start;
-    grid-template-columns: minmax(0, 1.12fr) minmax(132px, 0.76fr);
+    grid-template-columns: 1fr;
   }
 
   .right-rail {
@@ -943,9 +1071,13 @@ h3 {
   }
 
   .camera-frame {
-    aspect-ratio: 9 / 13;
+    aspect-ratio: 3 / 4;
     border-radius: 10px;
-    max-height: 54vh;
+    max-height: none;
+  }
+
+  .camera-frame video {
+    object-fit: contain;
   }
 
   .camera-status {

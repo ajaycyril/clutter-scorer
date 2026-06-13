@@ -7,6 +7,7 @@ Chrome / Edge camera
   -> Canvas frame sampler
   -> Edge metrics
   -> MediaPipe local object detection
+  -> Optional manual zone guard
   -> Keyframe selector
   -> Next.js API route
   -> Gemini structured physical reasoning
@@ -29,8 +30,11 @@ The browser performs deterministic work before any model call:
 - motion score
 - stability
 - local object detections
+- manual zone intrusion checks for person-in-zone alerts
 
 The client sends a keyframe only when the frame is usable, no request is in flight, enough time has passed, and the scene changed enough or the user requested verification.
+
+Frames are downscaled and JPEG-compressed before upload. The edge loop still runs locally at a higher cadence, so person-in-zone alerts and quality metrics remain responsive while Gemini calls are reserved for scene reasoning.
 
 ## Server Layer
 

@@ -51,12 +51,12 @@ export async function analyzeFrameWithGemini(request: AnalyzeFrameRequest): Prom
       systemInstruction: PHYSICAL_AI_SYSTEM_PROMPT,
       responseMimeType: "application/json",
       responseSchema: geminiResponseSchema,
-      mediaResolution: MediaResolution.MEDIA_RESOLUTION_HIGH,
+      mediaResolution: MediaResolution.MEDIA_RESOLUTION_LOW,
       thinkingConfig: {
         thinkingLevel: ThinkingLevel.LOW,
       },
       temperature: 0.25,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 2048,
     },
   });
 
